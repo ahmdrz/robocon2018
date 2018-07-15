@@ -41,13 +41,15 @@ void setup()
       ;
   }
 
-  relayCtrl.begin();
-
+#if ROBOT_MODE == 1
   dxController[0].begin();
   dxController[0].setPosition(DX_STEP_0, 50);
   delay(100);
   dxController[1].begin();
   dxController[1].setPosition(DX_STEP_1, 50);
+#else
+  relayCtrl.begin();
+#endif
 
   Serial.println("Setup has been finished");
 
@@ -111,7 +113,7 @@ void loop()
     motorCtrl.turnRight(gyro);
   else if (PS4.getButtonClick(L1))
     motorCtrl.turnLeft(gyro);
-  
+
   if (PS4.getButtonClick(CIRCLE))
     relayCtrl.sendCommand(RELAY_HIGH);
   else if (PS4.getButtonClick(TRIANGLE))
