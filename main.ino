@@ -25,7 +25,6 @@ BTD Btd(&Usb);
 PS4BT PS4(&Btd, PAIR);
 
 DynamixelController dxController[2] = {DynamixelController(1), DynamixelController(2)};
-byte selectedMotor = 1;
 
 void setup()
 {
@@ -60,66 +59,64 @@ void loop()
   readed_gyro = gyro.read();
   Usb.Task();
 
-  if (PS4.connected())
+  if (!PS4.connected())
   {
-    byte leftHatX = PS4.getAnalogHat(LeftHatX);
-    byte leftHatY = PS4.getAnalogHat(LeftHatY);
-    byte rightHatX = PS4.getAnalogHat(RightHatX);
+    return;
+  }
+  byte leftHatX = PS4.getAnalogHat(LeftHatX);
+  byte leftHatY = PS4.getAnalogHat(LeftHatY);
+  byte rightHatX = PS4.getAnalogHat(RightHatX);
 
-    if (leftHatX > 137 || leftHatX < 117 || leftHatY > 137 || leftHatY < 117)
-    {
-      int x = 128 - leftHatX;
-      int y = 128 - leftHatY;
-      float degree = degrees(atan2(y, x));
-      if (degree < 0)
-        degree = 360 + degree;
-      int speed = PS4.getAnalogButton(R2);
-      motorCtrl.go(degree, speed, readed_gyro);
-    }
-    else if (rightHatX > 137 || rightHatX < 117)
-    {
-      int x = (128 - rightHatX) * 1.5;
-      for (byte i = 0; i < 4; i++)
-        motorSendCommand(i, x);
-      gyro.zero();
-    }
-    else if (PS4.getButtonPress(UP))
-      motorCtrl.go(90, 255, readed_gyro);
-    else if (PS4.getButtonPress(LEFT))
-      motorCtrl.go(0, 255, readed_gyro);
-    else if (PS4.getButtonPress(DOWN))
-      motorCtrl.go(270, 255, readed_gyro);
-    else if (PS4.getButtonPress(RIGHT))
-      motorCtrl.go(180, 255, readed_gyro);
-    else
-      motorCtrl.stop();
-
-#if ROBOT_MODE == 1
-    if (PS4.getButtonClick(R1))
-      selectedMotor = 1;
-    else if (PS4.getButtonClick(L1))
-      selectedMotor = 2;
-#else
-    if (PS4.getButtonClick(R1))
-      motorCtrl.turnRight(gyro);
-    else if (PS4.getButtonClick(L1))
-      motorCtrl.turnLeft(gyro);
-#endif
+  if (leftHatX > 137 || leftHatX < 117 || leftHatY > 137 || leftHatY < 117)
+  {
+    int x = 128 - leftHatX;
+    int y = 128 - leftHatY;
+    float degree = degrees(atan2(y, x));
+    if (degree < 0)
+      degree = 360 + degree;
+    int speed = PS4.getAnalogButton(R2);
+    motorCtrl.go(degree, speed, readed_gyro);
+  }
+  else if (rightHatX > 137 || rightHatX < 117)
+  {
+    int x = (128 - rightHatX) * 1.5;
+    for (byte i = 0; i < 4; i++)
+      motorSendCommand(i, x);
+    gyro.zero();
+  }
+  else if (PS4.getButtonPress(UP))
+    motorCtrl.go(90, 255, readed_gyro);
+  else if (PS4.getButtonPress(LEFT))
+    motorCtrl.go(0, 255, readed_gyro);
+  else if (PS4.getButtonPress(DOWN))
+    motorCtrl.go(270, 255, readed_gyro);
+  else if (PS4.getButtonPress(RIGHT))
+    motorCtrl.go(180, 255, readed_gyro);
+  else
+    motorCtrl.stop();
 
 #if ROBOT_MODE == 1
+  if (PS4.getButtonPress(R1) || PS4.getButtonPress(L1))
+  {
+    byte selectedMotor = PS4.getButtonPress(R1) ? 0 : 1;
     if (PS4.getButtonClick(CIRCLE))
       dxController[selectedMotor].setPosition(DX_STEP_0, 50);
     else if (PS4.getButtonClick(TRIANGLE))
       dxController[selectedMotor].setPosition(DX_STEP_1, 50);
     else if (PS4.getButtonClick(SQUARE))
       dxController[selectedMotor].setPosition(DX_STEP_2, 50);
-#else
-    if (PS4.getButtonClick(CIRCLE))
-      relayCtrl.sendCommand(RELAY_HIGH);
-    else if (PS4.getButtonClick(TRIANGLE))
-      relayCtrl.sendCommand(RELAY_MEDIUM);
-    else if (PS4.getButtonClick(SQUARE))
-      relayCtrl.sendCommand(RELAY_LOW);
-#endif
   }
+#else
+  if (PS4.getButtonClick(R1))
+    motorCtrl.turnRight(gyro);
+  else if (PS4.getButtonClick(L1))
+    motorCtrl.turnLeft(gyro);
+  
+  if (PS4.getButtonClick(CIRCLE))
+    relayCtrl.sendCommand(RELAY_HIGH);
+  else if (PS4.getButtonClick(TRIANGLE))
+    relayCtrl.sendCommand(RELAY_MEDIUM);
+  else if (PS4.getButtonClick(SQUARE))
+    relayCtrl.sendCommand(RELAY_LOW);
+#endif
 }
