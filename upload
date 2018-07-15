@@ -1,0 +1,9 @@
+#!/bin/bash
+
+mkdir -p .backup
+timestamp=$(date +%s)
+mkdir .backup/$timestamp
+cp * .backup/$timestamp
+
+pkill -9 avrdude
+arduino --upload main.ino
