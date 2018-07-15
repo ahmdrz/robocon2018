@@ -2,7 +2,6 @@
 #include <usbhub.h>
 #include <SPI.h>
 
-#define ENABLE_CORRECTION 1
 #define ROBOT_MODE 0 // 0 = auto , 1 = manual
 
 #define DYNAMIXEL_SERIAL Serial1
@@ -53,7 +52,7 @@ void setup()
 
   Serial.println("Setup has been finished");
 
-  motorCtrl.debug();
+  // motorCtrl.debug();
 }
 
 void loop()

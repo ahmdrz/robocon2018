@@ -6,4 +6,4 @@ mkdir .backup/$timestamp
 cp * .backup/$timestamp
 
 pkill -9 avrdude
-arduino --upload main.ino
+arduino --port /dev/$(ls /dev | grep ttyACM | head -n 1) --upload main.ino

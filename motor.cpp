@@ -80,10 +80,10 @@ void MotorController::turnLeft(Gyro gyro)
         if (speed > 255)
             speed = 255;
         for (byte i = 0; i < 4; i++)
-            motorSendCommand(i, -speed);
+            motorSendCommand(i, speed);
 
         last_err = err;
-        err = 90 - (-1 * gyro.read());
+        err = 90 - gyro.read();
 
         if (abs(err) < 2)
             break;
@@ -108,10 +108,10 @@ void MotorController::turnRight(Gyro gyro)
         if (speed > 255)
             speed = 255;
         for (byte i = 0; i < 4; i++)
-            motorSendCommand(i, speed);
+            motorSendCommand(i, -speed);
 
         last_err = err;
-        err = 90 + (-1 * gyro.read());
+        err = 90 + gyro.read();
 
         if (abs(err) < 2)
             break;
@@ -125,7 +125,7 @@ void MotorController::turnRight(Gyro gyro)
 
 void MotorController::go(short angle, byte speed, signed short readed_gyro)
 {
-    signed short sum = 0, err = readed_gyro;
+    signed short sum = 0, err = -readed_gyro;
     sum = err * 8 + last_err_motor * 3;
     last_err_motor = err;
 
@@ -176,9 +176,7 @@ void MotorController::go(short angle, byte speed, signed short readed_gyro)
         for (byte i = 0; i < 4; i++)
         {
             speeds[i] /= divisor;
-#if ENABLE_CORRECTION == 1
             speeds[i] += sum;
-#endif
             if (speeds[i] > 255)
                 speeds[i] = 255;
             if (speeds[i] < -255)
