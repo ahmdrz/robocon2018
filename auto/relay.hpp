@@ -3,20 +3,24 @@
 
 #include <Arduino.h>
 
+#ifndef RL_LED
+#define RL_LED 49
+#endif
+
 #ifndef RL_LOW
-#define RL_LOW 24
+#define RL_LOW 33
 #endif
 
 #ifndef RL_STEP_1
-#define RL_STEP_1 28
+#define RL_STEP_1 31
 #endif
 
 #ifndef RL_STEP_2
-#define RL_STEP_2 26
+#define RL_STEP_2 35
 #endif
 
 #ifndef RL_STEP_3
-#define RL_STEP_3 28
+#define RL_STEP_3 37
 #endif
 
 #define RELAY_HIGH 3
@@ -28,10 +32,11 @@
 
 class RelayContoller
 {
-  public:
-    void begin();
+public:
+  void begin();
 
-    void sendCommand(byte cmd);
+  void led(int state);
+  void sendCommand(byte cmd);
 };
 
 #endif

@@ -11,6 +11,13 @@ void RelayContoller::begin()
     digitalWrite(RL_STEP_2, HIGH);
     pinMode(RL_STEP_3, OUTPUT);
     digitalWrite(RL_STEP_3, HIGH);
+    pinMode(RL_LED, OUTPUT);
+    digitalWrite(RL_LED, HIGH);
+}
+
+void RelayContoller::led(int state)
+{
+    digitalWrite(RL_LED, !state);
 }
 
 void RelayContoller::sendCommand(byte cmd)
@@ -29,10 +36,15 @@ void RelayContoller::sendCommand(byte cmd)
         break;
     }
 
+    led(HIGH);
+    delay(1000);
+
     digitalWrite(pin, LOW);
     delay(HIGH_TIME);
     digitalWrite(pin, HIGH);
     digitalWrite(RL_LOW, LOW);
     delay(LOW_TIME);
     digitalWrite(RL_LOW, HIGH);
+
+    led(LOW);
 }

@@ -2,34 +2,26 @@
 #include <usbhub.h>
 #include <SPI.h>
 
-#define ROBOT_MODE 0 // 0 = auto , 1 = manual
-
-#define DYNAMIXEL_SERIAL Serial1
 #include "dynamixel.hpp"
 #include "gyro.hpp"
 #include "motor.hpp"
-#include "relay.hpp"
 
-#define DX_STEP_0 0
-#define DX_STEP_1 180
+#define DX_STEP_0 10
+#define DX_STEP_1 205
 #define DX_STEP_2 300
 
 signed short readed_gyro = 0;
+bool connected = false;
 Gyro gyro;
-
 MotorController motorCtrl;
-RelayContoller relayCtrl;
 
 USB Usb;
 BTD Btd(&Usb);
 PS4BT PS4(&Btd, PAIR);
 
-DynamixelController dxController[2] = {DynamixelController(1), DynamixelController(2)};
-
 void setup()
 {
-  Serial.begin(115200);
-  Serial.println("Connecting ...");
+  Serial1.begin(57142);
 
   motorCtrl.begin();
   gyro.begin();
@@ -41,18 +33,6 @@ void setup()
       ;
   }
 
-#if ROBOT_MODE == 1
-  dxController[0].begin();
-  dxController[0].setPosition(DX_STEP_0, 50);
-  delay(100);
-  dxController[1].begin();
-  dxController[1].setPosition(DX_STEP_1, 50);
-#else
-  relayCtrl.begin();
-#endif
-
-  Serial.println("Setup has been finished");
-
   // motorCtrl.debug();
 }
 
@@ -63,8 +43,17 @@ void loop()
 
   if (!PS4.connected())
   {
+    connected = false;
     return;
   }
+
+  if (!connected)
+  {    
+    if (PS4.getButtonPress(SHARE))
+      return;
+    connected = true;
+  }
+
   byte leftHatX = PS4.getAnalogHat(LeftHatX);
   byte leftHatY = PS4.getAnalogHat(LeftHatY);
   byte rightHatX = PS4.getAnalogHat(RightHatX);
@@ -97,28 +86,20 @@ void loop()
   else
     motorCtrl.stop();
 
-#if ROBOT_MODE == 1
   if (PS4.getButtonPress(R1) || PS4.getButtonPress(L1))
   {
-    byte selectedMotor = PS4.getButtonPress(R1) ? 0 : 1;
-    if (PS4.getButtonClick(CIRCLE))
-      dxController[selectedMotor].setPosition(DX_STEP_0, 50);
-    else if (PS4.getButtonClick(TRIANGLE))
-      dxController[selectedMotor].setPosition(DX_STEP_1, 50);
+    byte selectedMotor = PS4.getButtonPress(R1) ? 1 : 2;
+    byte offset = selectedMotor == 1 ? 40 : 0;
+    if (PS4.getButtonClick(CROSS))
+      dxSetPosition(selectedMotor, DX_STEP_0 + offset, 80);
     else if (PS4.getButtonClick(SQUARE))
-      dxController[selectedMotor].setPosition(DX_STEP_2, 50);
+      dxSetPosition(selectedMotor, DX_STEP_1 + offset, 80);
+    else if (PS4.getButtonClick(TRIANGLE))
+      dxSetPosition(selectedMotor, DX_STEP_2 + offset, 80);
   }
-#else
-  if (PS4.getButtonClick(R1))
-    motorCtrl.turnRight(gyro);
-  else if (PS4.getButtonClick(L1))
-    motorCtrl.turnLeft(gyro);
 
-  if (PS4.getButtonClick(CIRCLE))
-    relayCtrl.sendCommand(RELAY_HIGH);
-  else if (PS4.getButtonClick(TRIANGLE))
-    relayCtrl.sendCommand(RELAY_MEDIUM);
-  else if (PS4.getButtonClick(SQUARE))
-    relayCtrl.sendCommand(RELAY_LOW);
-#endif
+  if (PS4.getButtonClick(SHARE))
+    motorCtrl.turnLeft(gyro);
+  else if (PS4.getButtonClick(OPTIONS))
+    motorCtrl.turnRight(gyro);
 }

@@ -6,8 +6,9 @@ void Gyro::begin()
 {
     Wire.begin();
     offset();
-    delay(3);
+    delay(3000);
     zero();
+    delay(1000);
 }
 
 void Gyro::offset()
