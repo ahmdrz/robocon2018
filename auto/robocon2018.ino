@@ -10,6 +10,7 @@
 #define DX_STEP_0 0
 #define DX_STEP_1 180
 #define DX_STEP_2 300
+#define ROBOT_SPEED 255
 
 #define REST_DELAY 10000
 
@@ -17,6 +18,7 @@ int robotState = 0;
 
 void findTheLine(byte mode);
 
+byte count_of_elements = 0;
 signed short readed_gyro = 0;
 Gyro gyro;
 MotorController motorCtrl;
@@ -74,7 +76,7 @@ void loop()
   }
   else if (robotState == 0)
   {
-    motorCtrl.go(270 - analogCtrl.error(), 150, readed_gyro);
+    motorCtrl.go(270 - analogCtrl.error(), ROBOT_SPEED, readed_gyro);
     if (analogCtrl.count() > 5)
     {
       robotState = 1;
@@ -85,12 +87,12 @@ void loop()
   {
     motorCtrl.turnLeft(gyro);
     motorCtrl.stop();
-    findTheLine(1);
+    findTheLine(2);
     robotState = 2;
   }
   else if (robotState == 2 || robotState == 3)
   {
-    motorCtrl.go(270 - analogCtrl.error(), 150, readed_gyro);
+    motorCtrl.go(270 - analogCtrl.error(), ROBOT_SPEED, readed_gyro);
     if (analogCtrl.count() > 5)
     {
       if (robotState == 2)
@@ -103,18 +105,18 @@ void loop()
       {
         motorCtrl.stop();
         motorCtrl.turnLeft(gyro);
-        findTheLine(1);
+        findTheLine(2);
 
         relayCtrl.sendCommand(RELAY_HIGH);
         motorCtrl.turnLeft(gyro);
-        findTheLine(1);
+        findTheLine(2);
         robotState = 4;
       }
     }
   }
   else if (robotState == 4 || robotState == 5)
   {
-    motorCtrl.go(270 - analogCtrl.error(), 150, readed_gyro);
+    motorCtrl.go(270 - analogCtrl.error(), ROBOT_SPEED, readed_gyro);
     if (analogCtrl.count() > 5)
     {
       if (robotState == 4)
@@ -127,20 +129,20 @@ void loop()
       {
         motorCtrl.stop();
         motorCtrl.turnLeft(gyro);
-        findTheLine(1);
+        findTheLine(2);
         robotState = 6;
       }
     }
   }
-  else if (robotState < 13)
+  else if (robotState < 9)
   {
-    motorCtrl.go(270 - analogCtrl.error(), 150, readed_gyro);
+    motorCtrl.go(270 - analogCtrl.error(), ROBOT_SPEED, readed_gyro);
     if (analogCtrl.count() > 5)
     {
       if (robotState == 6)
       {
         motorCtrl.turnLeft(gyro);
-        findTheLine(1);
+        findTheLine(2);
         robotState = 7;
       }
       else if (robotState == 7)
@@ -149,21 +151,45 @@ void loop()
         delay(REST_DELAY);
         robotState = 8;
       }
-      else if (robotState < 11)
+      else if (robotState == 8)
       {
-        delay(100);
-        motorCtrl.stop();
-        robotState++;
+        motorCtrl.turnLeft(gyro);
+        findTheLine(2);
+        relayCtrl.sendCommand(RELAY_HIGH);
+        motorCtrl.turnRight(gyro);
+        findTheLine(2);
+        robotState = 9;
       }
-      else if (robotState == 11)
+    }
+  }
+  else if (robotState == 9)
+  {
+    motorCtrl.go(90 + analogCtrl.error(), ROBOT_SPEED / 2, readed_gyro);
+    if (analogCtrl.count() > 5)
+    {
+      motorCtrl.stop();
+      motorCtrl.go(270, 100, readed_gyro);
+      delay(100);
+      motorCtrl.stop();
+      delay(REST_DELAY);
+      robotState = 10;
+      count_of_elements = 0;
+    }
+  }
+  else if (robotState == 10)
+  {
+    motorCtrl.go(270 - analogCtrl.error(), ROBOT_SPEED, readed_gyro);
+    if (analogCtrl.count() > 5)
+    {
+      count_of_elements++;
+      if (count_of_elements == 4)
       {
-        motorCtrl.stop();
         motorCtrl.turnLeft(gyro);
-        findTheLine(1);
-
-        relayCtrl.sendCommand(RELAY_LOW);
+        findTheLine(2);
+        relayCtrl.sendCommand(RELAY_HIGH);
         motorCtrl.turnLeft(gyro);
-        findTheLine(1);
+        findTheLine(2);
+        count_of_elements = 0;
         robotState = -1;
       }
     }
@@ -176,14 +202,14 @@ void findTheLine(byte mode)
   int err = analogCtrl.error();
   int count = analogCtrl.count();
   int timeout = 0;
-  while (timeout++ < 3000)
+  while (timeout++ < 700)
   {
     readed_gyro = gyro.read();
     int speed = 0;
     if (count == 0)
-      speed = 50;
+      speed = 70;
     else
-      speed = abs(err) * 6;
+      speed = abs(err) * 7;
 
     if (mode == 1)
       motorCtrl.go(180, speed, readed_gyro);
