@@ -27,6 +27,7 @@ class MotorController
     void stop();
     void turnRight(Gyro gyro);
     void turnLeft(Gyro gyro);
+    void turnCenter(int speed);
     void go(short angle, byte speed, signed short readed_gyro);
 
     void debug();

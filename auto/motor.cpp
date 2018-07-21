@@ -123,6 +123,12 @@ void MotorController::turnRight(Gyro gyro)
     stop();
 }
 
+void MotorController::turnCenter(int speed)
+{
+    for (byte i = 0; i < 4; i++)
+        motorSendCommand(i, speed);
+}
+
 void MotorController::go(short angle, byte speed, signed short readed_gyro)
 {
     signed short sum = 0, err = -readed_gyro;
