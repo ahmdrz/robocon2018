@@ -1,0 +1,4 @@
+#!/bin/bash
+
+pkill -9 avrdude
+arduino --port /dev/$(ls /dev | grep ttyACM | head -n 1) --upload main.ino

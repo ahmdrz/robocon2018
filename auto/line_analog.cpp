@@ -11,7 +11,6 @@ void LineController::begin()
 int LineController::read(int index)
 {
     int result = analogRead(sensorPins[index]) - analogOffsets[index];
-    // return result < 0 ? -result : result;
     return result;
 }
 
@@ -41,6 +40,11 @@ void LineController::updateThreshold(int index)
     int result = read(index);
     if (result < thresholds[index])
         thresholds[index] = result;
+}
+
+int LineController::threshold(int index)
+{
+    return thresholds[index];
 }
 
 int LineController::error()

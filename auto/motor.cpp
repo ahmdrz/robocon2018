@@ -91,7 +91,7 @@ void MotorController::turnLeft(Gyro gyro)
             sigma += err;
     }
     gyro.zero();
-    delay(10);
+    delay(50);
     stop();
 }
 
@@ -119,7 +119,7 @@ void MotorController::turnRight(Gyro gyro)
             sigma += err;
     }
     gyro.zero();
-    delay(10);
+    delay(50);
     stop();
 }
 

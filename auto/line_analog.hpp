@@ -38,7 +38,7 @@ public:
   bool isLine(int index);
   int error();
   int count();
-
+  int threshold(int index);
   void save();
   void load();
 };
